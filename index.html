@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DR Programme — Growth Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root{--bg:#fff;--bg2:#f8f8f7;--bg3:#f1efe8;--text:#1a1a1a;--text2:#6b6b6b;--text3:#aaa;--blue:#1A56A0;--green:#3B6D11;--amber:#854F0B;--red:#A32D2D;--blue-bg:#E6F1FB;--green-bg:#EAF3DE;--amber-bg:#FAEEDA;--red-bg:#FCEBEB;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);--r:8px;--rl:14px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font);background:var(--bg3);color:var(--text);font-size:14px}
+.sidebar{position:fixed;top:0;left:0;height:100vh;width:220px;background:var(--bg);border-right:0.5px solid var(--border2);display:flex;flex-direction:column;z-index:100}
+.logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border)}.logo-title{font-size:14px;font-weight:600}.logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.nav{flex:1;padding:12px 8px;overflow-y:auto}.nav-section{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);font-size:13px;color:var(--text2);cursor:pointer;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;transition:all .12s}
+.nav-item:hover{background:var(--bg2);color:var(--text)}.nav-item.on{background:var(--blue-bg);color:var(--blue);font-weight:500}.nav-item i{font-size:16px;width:18px;flex-shrink:0}
+.nav-footer{padding:12px;border-top:0.5px solid var(--border)}.sync-info{font-size:11px;color:var(--text3);line-height:1.5}
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:var(--bg);border-bottom:0.5px solid var(--border2);padding:12px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:500}.topbar-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.content{padding:24px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.kcard{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px;box-shadow:var(--shadow)}
+.kcard.hl{border-color:var(--blue);background:var(--blue-bg)}.kl{font-size:12px;color:var(--text2);margin-bottom:5px}.kv{font-size:24px;font-weight:600;line-height:1}.ks{font-size:11px;color:var(--text3);margin-top:4px}
+.kv.green{color:var(--green)}.kv.red{color:var(--red)}.kv.amber{color:var(--amber)}.kv.blue{color:var(--blue)}
+.section{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+.section-title{font-size:14px;font-weight:500;margin-bottom:4px}.section-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.twrap{overflow-x:auto;border-radius:var(--r);border:0.5px solid var(--border)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--bg2);white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:0.5px solid var(--border);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.tbl tr:last-child td{border-bottom:none}.tbl tr.winner td{background:var(--green-bg)}.tbl tr:hover:not(.winner) td{background:var(--bg2)}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px}
+.bw{background:var(--green-bg);color:var(--green)}.ba{background:var(--amber-bg);color:var(--amber)}.bl{background:var(--red-bg);color:var(--red)}.bi{background:var(--blue-bg);color:var(--blue)}
+.bar-w{display:flex;align-items:center;gap:6px}.bar-bg{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;min-width:40px}.bar-f{height:100%;border-radius:3px}
+.ring{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.rh{background:var(--green-bg);color:var(--green)}.rm{background:var(--amber-bg);color:var(--amber)}.rl{background:var(--red-bg);color:var(--red)}
+.winner-banner{background:linear-gradient(135deg,#EAF3DE,#D4EDBB);border:0.5px solid var(--green);border-radius:var(--rl);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.winner-ad{font-size:15px;font-weight:600;color:var(--green)}.winner-stats{font-size:12px;color:#27500A;margin-top:4px;line-height:1.6}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-group label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.filter-group select{font-size:13px;padding:6px 10px;border-radius:var(--r);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;min-width:120px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border2);color:var(--text2);background:transparent;font-family:var(--font);transition:all .12s}
+.pill.on{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+.btn{padding:8px 14px;border-radius:var(--r);border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--font)}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:500}
+.load-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px}
+.load-title{font-size:18px;font-weight:500}.load-msg{font-size:13px;color:var(--text2)}.load-sub{font-size:12px;color:var(--text3)}
+.pbar-bg{width:300px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}.pbar-f{height:100%;border-radius:3px;background:var(--blue);transition:width .4s}
+.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.view{display:none}.view.on{display:block}
+.info-box{background:var(--blue-bg);border:0.5px solid #B5D4F4;border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--blue);margin-bottom:14px;line-height:1.6}
+.warn-box{background:var(--amber-bg);border:0.5px solid #FAC775;border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--amber);margin-bottom:14px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.target-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px}
+.target-label{font-size:12px;color:var(--text2);margin-bottom:8px}
+.tbar-bg{width:100%;height:12px;background:var(--bg3);border-radius:6px;overflow:hidden;margin-bottom:8px}
+.tbar-f{height:100%;border-radius:6px;transition:width .6s}
+.tnums{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
+.chart-wrap{position:relative;width:100%}
+.quality-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.qcard{background:var(--bg2);border-radius:var(--r);padding:14px;border:0.5px solid var(--border)}.ql{font-size:12px;color:var(--text2);margin-bottom:6px}.qv{font-size:20px;font-weight:600}
+@media(max-width:900px){.sidebar{width:60px}.logo-sub,.nav-section,.nav-item span,.sync-info{display:none}.main{margin-left:60px}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><div class="logo-title">🩺 DR Programme</div><div class="logo-sub">Growth Dashboard</div></div>
+  <nav class="nav">
+    <div class="nav-section">Analytics</div>
+    <button class="nav-item on" onclick="showView('dashboard',this)"><i class="ti ti-layout-dashboard"></i><span>Overview</span></button>
+    <button class="nav-item" onclick="showView('winning',this)"><i class="ti ti-trophy"></i><span>Winning Ads</span></button>
+    <button class="nav-item" onclick="showView('monthly',this)"><i class="ti ti-calendar"></i><span>Monthly</span></button>
+    <button class="nav-item" onclick="showView('batch',this)"><i class="ti ti-layers"></i><span>Batch View</span></button>
+    <div class="nav-section">Insights</div>
+    <button class="nav-item" onclick="showView('quality',this)"><i class="ti ti-user-check"></i><span>Lead Quality</span></button>
+    <button class="nav-item" onclick="showView('attribution',this)"><i class="ti ti-git-branch"></i><span>Attribution Log</span></button>
+  </nav>
+  <div class="nav-footer"><div class="sync-info" id="syncInfo">Not synced yet</div></div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Overview</div>
+    <div class="topbar-r">
+      <span style="font-size:12px;color:var(--text3)" id="lastSync"></span>
+      <button class="btn btn-p" onclick="loadData(true)"><i class="ti ti-refresh"></i> Refresh</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- LOADING -->
+    <div id="loadScreen" class="load-screen">
+      <i class="ti ti-refresh spin" style="font-size:40px;color:var(--blue)"></i>
+      <div class="load-title">Building your dashboard</div>
+      <div class="load-msg" id="loadMsg">Fetching data from Google Sheets...</div>
+      <div class="pbar-bg"><div class="pbar-f" id="pbar" style="width:5%"></div></div>
+      <div class="load-sub" id="loadSub">Processing 153k rows — takes 20–30 seconds</div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="view-dashboard" class="view">
+      <div id="ov-kpi" class="kgrid"></div>
+      <div class="section">
+        <div class="section-title">Weekly Target Tracker</div>
+        <div class="section-sub">Target: 238 conversions/week · 0.8× ROAS</div>
+        <div class="grid2" id="targetWrap"></div>
+      </div>
+      <div class="grid2">
+        <div class="section">
+          <div class="section-title">Conversions by month</div>
+          <div class="section-sub">Online + Offline · Last ad before paid date</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="monthChart"></canvas></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Top 5 ads by conversions</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="topAdsChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINNING ADS -->
+    <div id="view-winning" class="view">
+      <div class="filters">
+        <div class="filter-group"><label>Month</label><select id="wMonth" onchange="renderWinning()"><option value="all">All months</option></select></div>
+        <div class="filter-group"><label>Batch</label><select id="wBatch" onchange="renderWinning()"><option value="all">All batches</option></select></div>
+        <div class="filter-group"><label>Leads</label><select id="wSugar" onchange="renderWinning()"><option value="diabetic">Diabetic only</option><option value="all">All leads</option></select></div>
+        <div class="filter-group"><label>Sort by</label><select id="wSort" onchange="renderWinning()"><option value="score">Winner score</option><option value="conv">Conversions</option><option value="cr">Conv rate %</option><option value="uLeads">Unique leads</option></select></div>
+      </div>
+      <div id="winning-banner"></div>
+      <div class="section"><div class="chart-wrap" id="winCW" style="height:300px"><canvas id="winChart"></canvas></div></div>
+      <div class="twrap"><table class="tbl" id="winTable"></table></div>
+    </div>
+
+    <!-- MONTHLY -->
+    <div id="view-monthly" class="view">
+      <div class="pills" id="mPills"></div>
+      <div id="mo-kpi" class="kgrid"></div>
+      <div class="section"><div class="chart-wrap" id="moCW" style="height:260px"><canvas id="moChart"></canvas></div></div>
+      <div class="twrap"><table class="tbl" id="moTable"></table></div>
+    </div>
+
+    <!-- BATCH -->
+    <div id="view-batch" class="view">
+      <div class="pills" id="bPills"></div>
+      <div id="ba-kpi" class="kgrid"></div>
+      <div class="section"><div class="chart-wrap" id="baCW" style="height:260px"><canvas id="baChart"></canvas></div></div>
+      <div class="twrap"><table class="tbl" id="baTable"></table></div>
+    </div>
+
+    <!-- LEAD QUALITY -->
+    <div id="view-quality" class="view">
+      <div class="section">
+        <div class="section-title">Lead Quality Breakdown</div>
+        <div class="section-sub">Sugar level segmentation from Meta instant form</div>
+        <div id="qualityGrid" class="quality-grid"></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="qualityChart"></canvas></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Top ads by diabetic lead quality</div>
+        <div class="section-sub">% of leads who are diabetic (150+ sugar level) — min 50 leads</div>
+        <div class="twrap"><table class="tbl" id="qualityTable"></table></div>
+      </div>
+    </div>
+
+    <!-- ATTRIBUTION LOG -->
+    <div id="view-attribution" class="view">
+      <div class="warn-box">Each conversion credited to the <strong>last ad that generated that phone on or before their paid date</strong>. Phones not in raw leads = offline/pre-Dec 2025 channel.</div>
+      <div id="attr-kpi" class="kgrid"></div>
+      <div class="twrap"><table class="tbl" id="attrTable"></table></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let D=null, activeMonth='', activeBatch='', charts={};
+const PRICE=3999, WEEKLY_TARGET=238;
+const fmt=n=>Number(Math.round(n)||0).toLocaleString('en-IN');
+const fmtM=m=>{if(!m||!m.includes('-'))return m;const[y,mo]=m.split('-');return['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo]+' '+y;};
+const dc=id=>{if(charts[id]){charts[id].destroy();delete charts[id];}};
+
+function setLoad(m,s,p){
+  document.getElementById('loadMsg').textContent=m;
+  document.getElementById('loadSub').textContent=s||'';
+  document.getElementById('pbar').style.width=p+'%';
+}
+
+async function loadData(force=false){
+  document.getElementById('loadScreen').style.display='flex';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  setLoad('Fetching data from Google Sheets...','Processing 153k rows — takes 20–30 seconds',10);
+
+  const t1=setTimeout(()=>setLoad('Attributing conversions to ads...','Last lead before paid date',50),8000);
+  const t2=setTimeout(()=>setLoad('Calculating winner scores...','Almost done',80),18000);
+
+  try{
+    const url='/api/data'+(force?'?refresh=1':'');
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('Server error: '+res.status);
+    D=await res.json();
+    clearTimeout(t1);clearTimeout(t2);
+
+    activeMonth=D.months[D.months.length-1]||'';
+    activeBatch=D.batches[D.batches.length-1]||'';
+
+    // Populate selects
+    document.getElementById('wMonth').innerHTML='<option value="all">All months</option>'+D.months.map(m=>`<option value="${m}">${fmtM(m)}</option>`).join('');
+    document.getElementById('wBatch').innerHTML='<option value="all">All batches</option>'+D.batches.map(b=>`<option value="${b}">${b}</option>`).join('');
+
+    const now=new Date(D.generatedAt);
+    document.getElementById('lastSync').textContent='Synced '+now.toLocaleTimeString();
+    document.getElementById('syncInfo').textContent='Synced\n'+now.toLocaleDateString();
+
+    setLoad('Done!','',100);
+    await new Promise(r=>setTimeout(r,300));
+    document.getElementById('loadScreen').style.display='none';
+    showView('dashboard',document.querySelector('.nav-item'));
+    renderOverview();
+  }catch(e){
+    clearTimeout(t1);clearTimeout(t2);
+    document.getElementById('loadMsg').innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';
+    document.getElementById('loadSub').textContent='Try refreshing the page.';
+  }
+}
+
+function calcScore(uL,conv){
+  const cr=uL?conv/uL*100:0;
+  return Math.round(Math.min(uL/500*20,20)+Math.min(cr/5*45,45)+(conv>=50?15:conv>=20?8:conv>=5?3:0));
+}
+
+function getAds(filters={}){
+  if(!D)return[];
+  const{month,batch,sugar,sort}=filters;
+  let data=D.ads.map(a=>{
+    if(month&&month!=='all'&&!a.months.includes(month))return null;
+    if(batch&&batch!=='all'&&!a.batches.includes(batch))return null;
+    const uL=sugar==='all'?a.uLeads:a.dULeads;
+    if(!uL)return null;
+    const cr=+(a.conv/uL*100).toFixed(2);
+    return{...a,uLeads:uL,cr,revenue:a.conv*PRICE,score:calcScore(uL,a.conv)};
+  }).filter(Boolean);
+  data.sort((a,b)=>{
+    if(sort==='conv')return b.conv-a.conv;
+    if(sort==='cr')return b.cr-a.cr;
+    if(sort==='uLeads')return b.uLeads-a.uLeads;
+    return b.score-a.score;
+  });
+  return data;
+}
+
+function renderKPI(ads,elId){
+  const tU=ads.reduce((s,a)=>s+a.uLeads,0),tC=ads.reduce((s,a)=>s+a.conv,0),tR=ads.reduce((s,a)=>s+(a.revenue||0),0),tRaw=ads.reduce((s,a)=>s+a.rawLeads,0);
+  const cr=tU?(tC/tU*100).toFixed(2):0;
+  document.getElementById(elId).innerHTML=`
+    <div class="kcard"><div class="kl">Unique leads</div><div class="kv blue">${fmt(tU)}</div><div class="ks">Raw: ${fmt(tRaw)} · Dups: ${fmt(tRaw-tU)}</div></div>
+    <div class="kcard"><div class="kl">Conversions</div><div class="kv green">${fmt(tC)}</div><div class="ks">Online + Offline</div></div>
+    <div class="kcard"><div class="kl">Conv rate</div><div class="kv ${+cr>=3?'green':+cr>=1.5?'amber':'red'}">${cr}%</div></div>
+    <div class="kcard"><div class="kl">Revenue</div><div class="kv">₹${fmt(tR)}</div><div class="ks">@ ₹3,999/conv</div></div>
+    <div class="kcard"><div class="kl">Ads tracked</div><div class="kv">${ads.length}</div></div>`;
+}
+
+function renderTable(ads,elId,showM){
+  const top=ads.slice(0,60),mU=Math.max(...top.map(a=>a.uLeads),1),mC=Math.max(...top.map(a=>a.conv),1);
+  document.getElementById(elId).innerHTML=`
+    <thead><tr>
+      <th style="width:34px"></th><th style="width:220px">Ad name</th>
+      ${showM?'<th style="width:90px">Months</th>':''}
+      <th style="width:130px">Unique leads</th><th style="width:110px">Conversions</th>
+      <th style="width:70px">Conv %</th><th style="width:80px">Revenue</th>
+      <th style="width:60px">Score</th><th style="width:70px">Status</th>
+    </tr></thead>
+    <tbody>${top.map((a,i)=>`
+      <tr class="${i===0?'winner':''}">
+        <td><div class="ring ${a.score>=60?'rh':a.score>=35?'rm':'rl'}">${a.score}</div></td>
+        <td style="font-weight:${i<3?500:400}" title="${a.ad}">${a.ad.length>30?a.ad.slice(0,28)+'…':a.ad}</td>
+        ${showM?`<td style="font-size:11px;color:var(--text2)">${(a.months||[]).slice(-3).map(fmtM).join(', ')}</td>`:''}
+        <td><div class="bar-w"><div class="bar-bg"><div class="bar-f" style="width:${Math.round(a.uLeads/mU*100)}%;background:#1A56A0"></div></div><span style="min-width:36px">${fmt(a.uLeads)}</span></div></td>
+        <td><div class="bar-w"><div class="bar-bg"><div class="bar-f" style="width:${Math.round(a.conv/mC*100)}%;background:#3B6D11"></div></div><span style="min-width:24px">${a.conv}</span></div></td>
+        <td style="font-weight:500;color:${a.cr>=3?'var(--green)':a.cr>=1.5?'var(--amber)':'var(--red)'}">${a.cr}%</td>
+        <td>₹${fmt(a.revenue||0)}</td><td>${a.score}</td>
+        <td>${a.score>=60?'<span class="badge bw">Winner</span>':a.score>=35?'<span class="badge ba">Average</span>':'<span class="badge bl">Low</span>'}</td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+function makeChart(id,wid,labels,datasets,opts={}){
+  dc(id);
+  if(wid)document.getElementById(wid).style.height=Math.max(240,labels.length*32+90)+'px';
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'bar',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11},autoSkip:false,maxRotation:30}},y:{ticks:{font:{size:11}}},...(opts.scales||{})}}});
+}
+
+function renderOverview(){
+  if(!D)return;
+  const ads=getAds({sort:'conv'});
+  const tU=ads.reduce((s,a)=>s+a.uLeads,0),tC=ads.reduce((s,a)=>s+a.conv,0),tR=ads.reduce((s,a)=>s+(a.revenue||0),0);
+  const cr=tU?(tC/tU*100).toFixed(2):0;
+  const latestConv=ads.filter(a=>a.months.includes(activeMonth)).reduce((s,a)=>s+a.conv,0);
+  const weeklyEst=Math.round(latestConv/4);
+  document.getElementById('ov-kpi').innerHTML=`
+    <div class="kcard hl"><div class="kl">Total unique leads</div><div class="kv blue">${fmt(tU)}</div><div class="ks">Month-wise deduplicated</div></div>
+    <div class="kcard"><div class="kl">Total conversions</div><div class="kv green">${fmt(tC)}</div><div class="ks">Online + Offline</div></div>
+    <div class="kcard"><div class="kl">Overall conv rate</div><div class="kv ${+cr>=2?'green':+cr>=1?'amber':'red'}">${cr}%</div></div>
+    <div class="kcard"><div class="kl">Total revenue</div><div class="kv">₹${fmt(tR)}</div><div class="ks">@ ₹3,999/conv</div></div>
+    <div class="kcard"><div class="kl">${fmtM(activeMonth)} conv</div><div class="kv">${fmt(latestConv)}</div></div>
+    <div class="kcard"><div class="kl">Est. weekly</div><div class="kv ${weeklyEst>=238?'green':weeklyEst>=180?'amber':'red'}">${weeklyEst}</div><div class="ks">Target: 238</div></div>`;
+
+  const wp=Math.min(weeklyEst/WEEKLY_TARGET*100,100);
+  document.getElementById('targetWrap').innerHTML=`
+    <div class="target-card"><div class="target-label">Weekly conversions vs target (238)</div>
+      <div class="tbar-bg"><div class="tbar-f" style="width:${wp}%;background:${weeklyEst>=238?'var(--green)':weeklyEst>=180?'var(--amber)':'var(--red)'}"></div></div>
+      <div class="tnums"><span>${weeklyEst} est.</span><span>238 target</span></div>
+    </div>
+    <div class="target-card"><div class="target-label">Conv rate vs 2% target</div>
+      <div class="tbar-bg"><div class="tbar-f" style="width:${Math.min(+cr/2*100,100)}%;background:var(--blue)"></div></div>
+      <div class="tnums"><span>${cr}% current</span><span>2% target</span></div>
+    </div>`;
+
+  // Month chart
+  const mConv={};D.ads.forEach(a=>a.months.forEach(m=>{mConv[m]=(mConv[m]||0)+a.conv;}));
+  const mL=D.months.slice(-8);
+  makeChart('monthChart',null,mL.map(fmtM),[{label:'Conversions',data:mL.map(m=>mConv[m]||0),backgroundColor:'#1A56A0',borderRadius:4}]);
+
+  // Top ads
+  const top5=ads.slice(0,5);
+  makeChart('topAdsChart',null,top5.map(a=>a.ad.length>18?a.ad.slice(0,16)+'…':a.ad),[
+    {label:'Unique leads',data:top5.map(a=>a.uLeads),backgroundColor:'#B5D4F4',borderRadius:4},
+    {label:'Conversions',data:top5.map(a=>a.conv),backgroundColor:'#3B6D11',borderRadius:4}
+  ]);
+}
+
+function renderWinning(){
+  const filters={month:document.getElementById('wMonth').value,batch:document.getElementById('wBatch').value,sugar:document.getElementById('wSugar').value,sort:document.getElementById('wSort').value};
+  const ads=getAds(filters);const w=ads[0];
+  document.getElementById('winning-banner').innerHTML=w?`<div class="winner-banner"><div style="font-size:28px">🏆</div><div><div class="winner-ad">${w.ad}</div><div class="winner-stats">${fmt(w.uLeads)} unique leads · ${w.conv} conversions · ${w.cr}% conv rate · ₹${fmt(w.revenue)} revenue · Score ${w.score}/100</div></div></div>`:'';
+  const top=ads.slice(0,10);
+  makeChart('winChart','winCW',top.map(a=>a.ad.length>18?a.ad.slice(0,16)+'…':a.ad),[
+    {label:'Unique leads',data:top.map(a=>a.uLeads),backgroundColor:'#B5D4F4',borderRadius:4},
+    {label:'Conversions',data:top.map(a=>a.conv),backgroundColor:'#3B6D11',borderRadius:4}
+  ]);
+  renderTable(ads,'winTable',true);
+}
+
+function renderMonthly(){
+  document.getElementById('mPills').innerHTML=D.months.map(m=>`<button class="pill ${m===activeMonth?'on':''}" onclick="activeMonth='${m}';renderMonthly()">${fmtM(m)}</button>`).join('');
+  const ads=getAds({month:activeMonth,sort:'conv'});
+  renderKPI(ads,'mo-kpi');
+  const top=ads.slice(0,10);
+  makeChart('moChart','moCW',top.map(a=>a.ad.length>18?a.ad.slice(0,16)+'…':a.ad),[
+    {label:'Unique leads',data:top.map(a=>a.uLeads),backgroundColor:'#B5D4F4',borderRadius:4},
+    {label:'Conversions',data:top.map(a=>a.conv),backgroundColor:'#3B6D11',borderRadius:4}
+  ]);
+  renderTable(ads,'moTable',false);
+}
+
+function renderBatch(){
+  document.getElementById('bPills').innerHTML=D.batches.slice(-30).map(b=>`<button class="pill ${b===activeBatch?'on':''}" onclick="activeBatch='${b}';renderBatch()">${b}</button>`).join('');
+  const ads=getAds({batch:activeBatch,sort:'score'});
+  renderKPI(ads,'ba-kpi');
+  const top=ads.slice(0,10);
+  dc('baChart');
+  document.getElementById('baCW').style.height=Math.max(240,top.length*32+90)+'px';
+  charts['baChart']=new Chart(document.getElementById('baChart').getContext('2d'),{type:'bar',
+    data:{labels:top.map(a=>a.ad.length>18?a.ad.slice(0,16)+'…':a.ad),datasets:[
+      {label:'Conv%',data:top.map(a=>a.cr),backgroundColor:'#3B6D11',borderRadius:4,yAxisID:'y1'},
+      {label:'Leads',data:top.map(a=>a.uLeads),backgroundColor:'#B5D4F4',borderRadius:4,yAxisID:'y2'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:11},autoSkip:false,maxRotation:30}},
+        y1:{type:'linear',position:'left',ticks:{font:{size:11},callback:v=>v+'%'}},
+        y2:{type:'linear',position:'right',ticks:{font:{size:11}},grid:{drawOnChartArea:false}}}}
+  });
+  renderTable(ads,'baTable',false);
+}
+
+function renderQuality(){
+  const sMap={};let total=0;
+  D.ads.forEach(a=>Object.entries(a.sugarCounts||{}).forEach(([k,v])=>{sMap[k]=(sMap[k]||0)+v;total+=v;}));
+  const d150=(sMap['150-250_sugar_level']||0)+(sMap['150-200_sugar_level']||0);
+  const d250=sMap['above_250_sugar_level']||0;
+  const diabetic=d150+d250;
+  const nonD=(sMap['no_sugar_/_\u0b9a\u0b95\u0bcd\u0b95\u0bb0\u0bc8 \u0ba8\u0bcb\u0baf\u0bcd \u0b87\u0bb2\u0bcd']||0)+(sMap['no_sugar_/_\u0b9a\u0b95\u0bcd\u0b95\u0bb0\u0bc8_\u0ba8\u0bcb\u0baf\u0bcd_\u0b87\u0bb2\u0bcd']||0);
+  const qr=total?+(diabetic/total*100).toFixed(1):0;
+  document.getElementById('qualityGrid').innerHTML=`
+    <div class="qcard"><div class="ql">Total leads</div><div class="qv">${fmt(total)}</div></div>
+    <div class="qcard"><div class="ql">Diabetic leads</div><div class="qv" style="color:var(--green)">${fmt(diabetic)}</div></div>
+    <div class="qcard"><div class="ql">Non-diabetic (disqualified)</div><div class="qv" style="color:var(--red)">${fmt(nonD)}</div></div>
+    <div class="qcard"><div class="ql">Qualification rate</div><div class="qv" style="color:${qr>=70?'var(--green)':'var(--amber)'}">${qr}%</div></div>`;
+  dc('qualityChart');
+  charts['qualityChart']=new Chart(document.getElementById('qualityChart').getContext('2d'),{type:'doughnut',
+    data:{labels:['150–250 sugar','Above 250','Non-diabetic','Other'],
+      datasets:[{data:[d150,d250,nonD,total-diabetic-nonD],backgroundColor:['#3B6D11','#1A56A0','#A32D2D','#854F0B'],borderWidth:0,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:12},padding:16}}}}
+  });
+  const qa=D.ads.map(a=>{const uL=a.uLeads;return{...a,qr:uL?+(a.dULeads/uL*100).toFixed(1):0};}).filter(a=>a.uLeads>=50).sort((a,b)=>b.qr-a.qr).slice(0,30);
+  document.getElementById('qualityTable').innerHTML=`
+    <thead><tr><th style="width:220px">Ad name</th><th>Total leads</th><th>Diabetic leads</th><th>Qual rate</th><th>Conv.</th></tr></thead>
+    <tbody>${qa.map((a,i)=>`<tr class="${i===0?'winner':''}">
+      <td title="${a.ad}">${a.ad.length>30?a.ad.slice(0,28)+'…':a.ad}</td>
+      <td>${fmt(a.uLeads)}</td><td>${fmt(a.dULeads)}</td>
+      <td><span class="badge ${a.qr>=70?'bw':a.qr>=50?'ba':'bl'}">${a.qr}%</span></td>
+      <td>${a.conv}</td>
+    </tr>`).join('')}</tbody>`;
+}
+
+function renderAttribution(){
+  const s=D.attrStats||{};
+  document.getElementById('attr-kpi').innerHTML=`
+    <div class="kcard"><div class="kl">Attributed</div><div class="kv green">${fmt(s.attributed||0)}</div><div class="ks">Last lead before paid date</div></div>
+    <div class="kcard"><div class="kl">No paid date</div><div class="kv amber">${fmt(s.noDate||0)}</div><div class="ks">Used last lead ever</div></div>
+    <div class="kcard"><div class="kl">Lead after payment</div><div class="kv amber">${fmt(s.afterDate||0)}</div><div class="ks">Used earliest lead</div></div>
+    <div class="kcard"><div class="kl">No lead found</div><div class="kv red">${fmt(s.noLead||0)}</div><div class="ks">Pre-Dec 2025 / offline</div></div>
+    <div class="kcard"><div class="kl">Total raw leads</div><div class="kv">${fmt(D.totalRaw||0)}</div></div>`;
+  const ads=getAds({sort:'conv'}).slice(0,30);
+  document.getElementById('attrTable').innerHTML=`
+    <thead><tr><th style="width:220px">Ad name</th><th>Unique leads</th><th>Conversions</th><th>Conv%</th><th>Revenue</th><th>Months</th><th>Score</th></tr></thead>
+    <tbody>${ads.map((a,i)=>`<tr class="${i===0?'winner':''}">
+      <td style="font-weight:${i<3?500:400}" title="${a.ad}">${a.ad.length>30?a.ad.slice(0,28)+'…':a.ad}</td>
+      <td>${fmt(a.uLeads)}</td><td>${a.conv}</td>
+      <td style="color:${a.cr>=3?'var(--green)':a.cr>=1.5?'var(--amber)':'var(--red)'};font-weight:500">${a.cr}%</td>
+      <td>₹${fmt(a.revenue||0)}</td>
+      <td style="font-size:11px;color:var(--text2)">${(a.months||[]).slice(-3).map(fmtM).join(', ')}</td>
+      <td>${a.score}</td>
+    </tr>`).join('')}</tbody>`;
+}
+
+const viewTitles={dashboard:'Overview',winning:'Winning Ads',monthly:'Monthly View',batch:'Batch View',quality:'Lead Quality',attribution:'Attribution Log'};
+function showView(id,btn){
+  if(!D&&id!=='dashboard')return;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('on'));
+  const v=document.getElementById('view-'+id);if(v)v.classList.add('on');
+  if(btn)btn.classList.add('on');
+  document.getElementById('topbarTitle').textContent=viewTitles[id]||id;
+  if(id==='winning')renderWinning();
+  else if(id==='monthly')renderMonthly();
+  else if(id==='batch')renderBatch();
+  else if(id==='quality')renderQuality();
+  else if(id==='attribution')renderAttribution();
+  else renderOverview();
+}
+
+window.onload=()=>loadData(false);
+</script>
+</body>
+</html>
